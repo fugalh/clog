@@ -1,3 +1,5 @@
+require 'clog'
+
 module Clog
   class Dhclient < Agent
     def initialize

@@ -1,3 +1,5 @@
+require 'clog'
+
 module Clog
   class Postfix < Agent
     def initialize

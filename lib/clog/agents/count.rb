@@ -1,3 +1,5 @@
+require 'clog'
+
 module Clog
   # simple example agent that just does the equivalent of 'wc -l'
   class Count < Agent

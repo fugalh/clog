@@ -1,3 +1,5 @@
+require 'clog'
+
 module Clog
   class Cron < Agent
     def initialize

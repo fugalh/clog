@@ -1,3 +1,5 @@
+require 'clog'
+
 module Clog
   # This is the fallback class that simply regurgitates the lines fed to it.
   class Fallback < Agent
