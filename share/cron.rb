@@ -29,4 +29,28 @@ module Clog
       s
     end
   end
+  class Anacron < Agent
+    def initialize
+      @commands = {}
+      @jobs = 0
+    end
+    def handle(line,handled)
+      return false,false unless line =~ /anacron\[/
+      p = syslog_parse(line)
+      @jobs += 1 if p.last =~ /(\d+) jobs? run/
+      return true,true
+    end
+    def report
+      s = ""
+      case @jobs
+      when 0
+	s = "No jobs run."
+      when 1
+	s = "1 job run."
+      when Integer
+	s = "#{@jobs} jobs run."
+      end
+      s
+    end
+  end
 end
