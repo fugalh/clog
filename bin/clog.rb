@@ -18,10 +18,16 @@ if $0 == __FILE__
   require 'yaml'
   require 'ostruct'
   require 'zlib'
+  require 'time'
 
+  def parsedate(date)
+    Time.parse(`date -d "#{date}"`)
+  end
   # command-line options
   options = {
     :config_file => "/etc/clog/clog.conf",
+    :from => parsedate('yesterday'),
+    :to => parsedate("now")
   }
   opts = OptionParser.new do |opts|
     opts.banner = "usage: #{$0} [options]"
@@ -30,7 +36,15 @@ if $0 == __FILE__
       |options[:config_file]|}
     opts.on('-C','--show-config','show real configuration') {
       |options[:show_config]|}
+    opts.on('-f','--from DATE','start date (yesterday)') { |d|
+      options[:from] = parsedate(d)
+    }
+    opts.on('-t','--to DATE','start date (now)') { |d|
+      options[:to] = parsedate(d)
+    }
     opts.on('-h','--help','this message') { puts opts; exit }
+    opts.separator ''
+    opts.separator('Dates are in the format that date(1) accepts')
   end
   opts.parse!(ARGV)
 
@@ -57,6 +71,7 @@ if $0 == __FILE__
 
   # do it, rockapella
   files.sort.reverse.each do |file|
+    next if File.mtime(file) < config.from
     unless File.readable?(file)
       $stderr.puts "warning: #{file} is not readable."
       next
@@ -68,6 +83,8 @@ if $0 == __FILE__
     end
     t_filters = filters.find_all { |f| File.fnmatch(f.glob,file) }
     io.each_line do |line|
+      t = Time.parse(line[0,15],config.to)
+      next if t < config.from or t > config.to
       t_filters.each do |f|
 	f.filter(line) if f.match(line)
       end
