@@ -1,31 +1,31 @@
 module Clog
   class Cron < Filter
     def initialize
-      @entries = []
-      @replaces = []
+      @commands = {}
     end
     def match(line)
-      line =~ /\/cron|anacron|crontab/i
+      line =~ /\/CRON/
     end
     def filter(line)
       p = syslog_parse(line)
       if p.last =~ /\((\S+)\) CMD \((.*)\)/
-	@entries.push({'username'=>$1,'cmd'=>$2})
-      elsif p.last =~ /\((\S+)\) REPLACE \((\S+)\)/
-	@replaces.push(line)
+	user = $1
+	@commands[user] ||= []
+	@commands[user].push $2
       end
     end
     def report
-      count = {}
       s = ""
+      @commands.each do |k,v|
+	s << "#{k}:\n"
+	count = {}
 
-      @replaces.each {|r| s += r}
-
-      @entries.each do |e| 
-	count[e['cmd']] ||= 0
-	count[e['cmd']] += 1
+	v.each do |e| 
+	  count[e] ||= 0
+	  count[e]  += 1
+	end
+	count.each {|k,v| s << sprintf(" %3d time(s): %s\n",v,k)}
       end
-      count.each {|k,v| s += sprintf("%2d times: %s\n",v,k)}
 
       s
     end

@@ -42,15 +42,12 @@ Dir.glob("#{config.filter_dir}/*.rb") { |f|
   load f
 }
 filters = []
-files = []
 config.filters.each do |f|
   a = eval("Clog::#{f['class']}.new")
   a.name = f['name'] || f['class']
   a.glob = f['glob'] || ''
-  files.concat Dir.glob("#{a.glob}")
   filters.push a
 end
-files.uniq!
 
 # do it, rockapella
 filters.each do |f|
@@ -66,9 +63,7 @@ filters.each do |f|
       io = File.open(file,'r')
     end
     io.each_line do |line|
-      filters.each do |f|
-	f.filter(line) if f.match(line)
-      end
+      f.filter(line) if f.match(line)
     end
     io.close
   end
