@@ -15,7 +15,7 @@ module Clog
 	@replaces.push(line)
       end
     end
-    def to_s
+    def report
       count = {}
       s = ""
 

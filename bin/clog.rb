@@ -56,22 +56,26 @@ files.uniq!
 filters.each do |f|
   io = nil
   Dir.glob(f.glob).each do |file| 
+    unless File.readable?(file)
+      $stderr.puts "warning: #{file} is not readable."
+      next
+    end
     if system("file \"#{file}\"|grep -q \"gzip compressed data\"")
       io = Zlib::GzipReader.open(file,'r')
     else
       io = File.open(file,'r')
     end
-  end
-  io.each_line do |line|
-    filters.each do |f|
-      f.filter(line) if f.match(line)
+    io.each_line do |line|
+      filters.each do |f|
+	f.filter(line) if f.match(line)
+      end
     end
+    io.close
   end
-  io.close
 end
 filters.each do |f|
   name = "(nameless)"
   name = f.name if f.respond_to? "name"
   puts "\n---- #{name} ----"
-  puts f.to_s
+  puts f.report
 end

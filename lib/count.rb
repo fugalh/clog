@@ -11,8 +11,8 @@ module Clog
     end
     # this is the output of the filter, called when all lines have been fed to
     # filter()
-    def to_s
-      "line count: @count.to_s"
+    def report
+      "line count: #{@count.to_s}"
     end
   end
 end
