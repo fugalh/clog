@@ -19,4 +19,10 @@ config: .config
 install: config
 	ruby setup.rb install
 
-.PHONY: test install doc config agents
+clean:
+	ruby setup.rb clean
+
+show: .config
+	ruby setup.rb show
+
+.PHONY: test install doc config agents clean show

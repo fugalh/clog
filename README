@@ -26,6 +26,7 @@ agent.
 - ruby
 
 = Installation
+  make config show
   make install
 
 The install make target does not set up a cron job. See examples/crontab for a
@@ -36,6 +37,7 @@ the parameters you want.
 
 = License
 Copyright (C) 2005  Hans Fugal <hans@fugal.net>
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
