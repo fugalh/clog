@@ -5,10 +5,10 @@ module Clog
       @infected = 0
     end
     def handle(line,handled)
-      return false,false unless line =~ / amavis\[/
+      return :unhandled unless line =~ / amavis\[/
       @infected += 1 if line =~ /INFECTED/
       @passed   += 1 if line =~ /Passed/
-      return true,true
+      return :consumed
     end
     def report
       sprintf "%3d passed\n%3d infected", @passed, @infected

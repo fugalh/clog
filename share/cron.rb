@@ -4,14 +4,14 @@ module Clog
       @commands = {}
     end
     def handle(line,handled)
-      return false,false unless line =~ /CRON/
+      return :unhandled unless line =~ /CRON/
       p = syslog_parse(line)
       if p.last =~ /\((\S+)\) CMD \((.*)\)/
 	user = $1
 	@commands[user] ||= []
 	@commands[user].push $2.strip
       end
-      return true,true
+      return :consumed
     end
     def report
       s = ""
@@ -35,10 +35,10 @@ module Clog
       @jobs = 0
     end
     def handle(line,handled)
-      return false,false unless line =~ /anacron\[/
+      return :unhandled unless line =~ /anacron\[/
       p = syslog_parse(line)
       @jobs += 1 if p.last =~ /(\d+) jobs? run/
-      return true,true
+      return :consumed
     end
     def report
       s = ""

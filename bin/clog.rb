@@ -10,12 +10,12 @@ module Clog
     # This method is called for every line in the log file(s).
     # If this line has already been handled by another agent, handled will be
     # true. This is just informative, you can still do whatever you want with
-    # the line. If another agent already returned true for consumed, then this
+    # the line. If another agent already consumed this line, then this
     # will never be called.
     #
-    # Returns handled,consumed tuple
+    # Returns one of {:unhandled,:handled,:consumed}
     def handle(line, handled)
-      return false,false
+      return :unhandled
     end
 
     # This method is called after all lines have been fed to handle(). 
@@ -71,11 +71,10 @@ d+)\])?: (.*)/
 	  t = Time.parse(l[0,15],@to)
 	  next if t < @from or t > @to
 
-	  handled = false
-	  consumed = false
+	  handled = :unhandled
 	  @agents.each do |a|
-	    break if consumed
-	    handled,consumed = a.handle(l,handled)
+	    break if handled == :consumed
+	    handled = a.handle(l,handled)
 	  end
 	end
 	io.close

@@ -1,8 +1,7 @@
 module Clog
   class Postfix < Agent
     def handle(line,handled)
-      return false,false unless line =~ / postfix\//
-      return true,true
+      line =~ / postfix\// ? :consumed : :unhandled
     end
     def report
       ""

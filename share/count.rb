@@ -7,9 +7,9 @@ module Clog
     end
     # will only be called on lines that pass match()
     def handle(line,handled)
-      return false,false unless line =~ /./
+      return :unhandled unless line =~ /./
       @count += 1
-      return true,true
+      return :consumed
     end
     # this is the output of the agent, called after all lines have been fed to
     # handle()
