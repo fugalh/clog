@@ -26,7 +26,6 @@ agent.
 - ruby
 
 = Installation
-  make test | less -S
   make install
 
 The install make target does not set up a cron job. See examples/crontab for a
