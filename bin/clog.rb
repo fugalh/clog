@@ -47,6 +47,7 @@ if $0 == __FILE__
     opts.separator('Dates are in the format that date(1) accepts')
   end
   opts.parse!(ARGV)
+  starttime = Time.now
 
   # configuration file
   config = OpenStruct.new(YAML.load(File.read(options[:config_file])).merge(options))
@@ -91,6 +92,15 @@ if $0 == __FILE__
     end
     io.close
   end
+
+  # output
+  puts <<EOF
+*************************** clog ***************************
+Started at  #{starttime}
+Time range: #{config.from} to #{config.to}
+************************************************************
+
+EOF
   filters.each do |f|
     name = "(nameless)"
     name = f.name if f.respond_to? "name"
