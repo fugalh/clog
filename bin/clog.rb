@@ -8,42 +8,31 @@ module Clog
     # true. This is just informative, you can still do whatever you want with
     # the line. If another agent already returned true for consumed, then this
     # will never be called.
+    #
     # Returns handled,consumed tuple
     def handle(line, handled)
       return false,false
     end
 
-    # This method is called after all lines have been fed to handle(). Returns
-    # a string suitable for email (e.g. wrapped at 72 characters, etc.)
+    # This method is called after all lines have been fed to handle(). 
+    #
+    # Returns a string suitable for email (e.g. wrapped at 72 characters, etc.)
     def report
       ""
     end
 
-    # This is a convenience method for handling syslog entries.
+    # This is a convenience method for handling syslog entries. 
+    # 
+    # Returns time,hostname,tag,pid,msg
     def syslog_parse(line)
       return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\
 d+)\])?: (.*)/
       time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
     end
   end
-  
-  # This is the fallback class that simply regurgitates the lines fed to it.
-  class Fallback < Agent
-    def initialize
-      @lines = []
-    end
-    def handle(line, handled)
-      @lines.push line
-      return true,true
-    end
-    def report
-      @lines.join ""
-    end
-  end
 
   # Directs the feeding and reporting of agents for a given file glob.
   class Director
-    attr_reader :glob
     def initialize(glob, agents, from, to)
       @glob, @agents, @from, @to = glob, agents, from, to
     end
