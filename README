@@ -24,7 +24,6 @@ agent.
 
 = Requirements
 - ruby
-- file(1)
 
 = Installation
   make test | less -S

@@ -74,11 +74,7 @@ d+)\])?: (.*)/
 	  $stderr.puts "warning: #{f} is not readable."
 	  next
 	end
-	if system("file \"#{f}\"|grep -q 'gzip compressed data'")
-	  io = Zlib::GzipReader.open(f)
-	else
-	  io = File.open(f)
-	end
+	io = Zlib::GzipReader.open(f) rescue io = File.open(f)
 	io.each_line do |l|
 	  # skip if ignored
 	  next if @ignore and @ignore.match(l) 
