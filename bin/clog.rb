@@ -55,12 +55,13 @@ Dir.glob("#{config.filter_dir}/*.rb") { |f|
   load f
 }
 filters = []
-files = []
+require 'set'
+files = Set.new
 config.filters.each do |f|
   a = eval("Clog::#{f['class']}.new")
   a.name = f['name'] || f['class']
   a.glob = f['glob'] || ''
-  files.concat Dir.glob("#{a.glob}")
+  files.merge Dir.glob("#{a.glob}")
   filters.push a
 end
 
