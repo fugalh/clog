@@ -45,31 +45,34 @@ if $0 == __FILE__
     load f
   }
   filters = []
+  files = []
   config.filters.each do |f|
     a = eval("Clog::#{f['class']}.new")
     a.name = f['name'] || f['class']
     a.glob = f['glob'] || ''
+    files.concat Dir.glob(a.glob)
     filters.push a
   end
+  files.uniq!
 
   # do it, rockapella
-  filters.each do |f|
-    io = nil
-    Dir.glob(f.glob).sort.reverse.each do |file| 
-      unless File.readable?(file)
-	$stderr.puts "warning: #{file} is not readable."
-	next
-      end
-      if system("file \"#{file}\"|grep -q \"gzip compressed data\"")
-	io = Zlib::GzipReader.open(file)
-      else
-	io = File.open(file)
-      end
-      io.each_line do |line|
+  files.sort.reverse.each do |file|
+    unless File.readable?(file)
+      $stderr.puts "warning: #{file} is not readable."
+      next
+    end
+    if system("file \"#{file}\"|grep -q \"gzip compressed data\"")
+      io = Zlib::GzipReader.open(file)
+    else
+      io = File.open(file)
+    end
+    t_filters = filters.find_all { |f| File.fnmatch(f.glob,file) }
+    io.each_line do |line|
+      t_filters.each do |f|
 	f.filter(line) if f.match(line)
       end
-      io.close
     end
+    io.close
   end
   filters.each do |f|
     name = "(nameless)"
