@@ -27,6 +27,10 @@ puts config.inspect if config.show_config
 module Clog
   class Filter
     attr_accessor :name, :glob
+    def syslog_parse(line)
+      return false unless line =~ /(\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\d+)\])?: (.*)/
+      time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
+    end
   end
 
   class FallbackFilter < Filter
