@@ -36,7 +36,11 @@ opts.parse!(ARGV)
 starttime = Time.now
 
 # configuration file
-config = OpenStruct.new(YAML.load(File.read(options.config_file)))
+config = OpenStruct.new(YAML.load(File.read(options.config_file))) rescue begin 
+  puts "Error reading config file #{options.config_file}"
+  puts opts
+  exit 1
+end
 config.agent_dirs ||= []
 puts config.inspect if options.show_config
 
