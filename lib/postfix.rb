@@ -5,7 +5,8 @@ module Clog
     end
     def filter(line)
     end
-    def to_s
+    def report
+      ""
     end
   end
 end
