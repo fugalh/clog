@@ -5,8 +5,9 @@ module Clog
       @lines = []
     end
     def handle(line, handled)
+      return false,false if handled
       @lines.push line
-      return true,true
+      return false,true
     end
     def report
       @lines.join ""
