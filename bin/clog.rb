@@ -1,10 +1,12 @@
 #!/usr/bin/ruby
 
-# command-line options
 require 'optparse'
+require 'yaml'
+require 'ostruct'
+require 'zlib'
+# command-line options
 options = {
   :config_file => "/etc/clog/clog.conf",
-  :fallback => true
 }
 opts = OptionParser.new do |opts|
   opts.banner = "usage: #{$0} [options]"
@@ -18,8 +20,6 @@ end
 opts.parse!(ARGV)
 
 # configuration file
-require 'yaml'
-require 'ostruct'
 config = OpenStruct.new(YAML.load(File.read(options[:config_file])).merge(options))
 puts config.inspect if config.show_config
 
@@ -27,57 +27,49 @@ puts config.inspect if config.show_config
 module Clog
   class Filter
     attr_accessor :name, :glob
+    def match(line)
+      true
+    end
     def syslog_parse(line)
       return false unless line =~ /(\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\d+)\])?: (.*)/
       time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
     end
   end
-
-  class FallbackFilter < Filter
-    def initialize
-      @lines = []
-      @name = "Fallback"
-    end
-    def filter(line)
-      @lines ||= []
-      @lines.push line
-      true
-    end
-    def to_s
-      @lines
-    end
-  end
 end
-fallback = Clog::FallbackFilter.new
 
 # load filters
 Dir.glob("#{config.filter_dir}/*.rb") { |f|
   load f
 }
 filters = []
-require 'set'
-files = Set.new
+files = []
 config.filters.each do |f|
   a = eval("Clog::#{f['class']}.new")
   a.name = f['name'] || f['class']
   a.glob = f['glob'] || ''
-  files.merge Dir.glob("#{a.glob}")
+  files.concat Dir.glob("#{a.glob}")
   filters.push a
 end
+files.uniq!
 
 # do it, rockapella
-files.each do |file|
-  File.read(file).each_line do |line|
-    handled = false
-    filters.each do |f|
-      if File.fnmatch("#{f.glob}",file)
-	handled |= f.filter(line)
-      end
+filters.each do |f|
+  io = nil
+  Dir.glob(f.glob).each do |file| 
+    if system("file \"#{file}\"|grep -q \"gzip compressed data\"")
+      io = Zlib::GzipReader.open(file,'r')
+    else
+      io = File.open(file,'r')
     end
-    fallback.filter(line) unless handled or not config.fallback
   end
+  io.each_line do |line|
+    filters.each do |f|
+      f.filter(line) if f.match(line)
+    end
+  end
+  io.close
 end
-(filters.concat [fallback]).each do |f|
+filters.each do |f|
   name = "(nameless)"
   name = f.name if f.respond_to? "name"
   puts "\n---- #{name} ----"
