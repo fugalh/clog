@@ -1,4 +1,9 @@
 #!/usr/bin/ruby
+class Hash
+  def Hash.fold(keys,values)
+    Hash[*keys.zip(values).flatten]
+  end
+end
 
 # :include:README
 module Clog
@@ -30,13 +35,17 @@ module Clog
 
   # This is a convenience method for handling syslog entries. 
   # 
-  # Returns time,hostname,tag,pid,msg
+  # Returns a hash with keys [:time,:hostname,:tag,:pid,:msg], or false on
+  # failure.
   def syslog_parse(line)
     return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\
 d+)\])?: (.*)/
-    time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
+    keys = [:time,:hostname,:tag,:pid,:msg]
+    values = [$1,$2,$3,$5,$6]
+    Hash.fold(keys,values)
   end
 
+  # Return a Time object given a string representation that date(1) understands
   def parsedate(date)
     Time.parse(`date -d "#{date}"`)
   end
