@@ -81,8 +81,12 @@ d+)\])?: (.*)/
       <<EOF
 ----- #{@glob} -----
 
-#{@agents.collect {|a| "-= #{a.class} =-\n#{a.report}"}.join "\n\n"}
+#{@agents.collect {|a| <<EOF2
+-= #{a.class.to_s['Clog::'.size .. -1]} =-
+#{a.report}
 
+EOF2
+}.join ""}
 EOF
     end
   end
