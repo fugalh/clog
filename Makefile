@@ -2,7 +2,7 @@ rdoc=rdoc1.8
 test: agents
 	echo "# this file is generated" > test/clog.conf
 	sed "s:/usr/local/share/clog/agents:share:" examples/clog.conf >> test/clog.conf
-	ruby -Ilib bin/clog.rb -C -c test/clog.conf
+	ruby -Ilib bin/clog -C -c test/clog.conf
 
 agents:
 	> lib/clog/agents.rb
@@ -21,6 +21,7 @@ install: config
 
 clean:
 	ruby setup.rb clean
+	rm -rf doc
 
 show: .config
 	ruby setup.rb show
