@@ -121,9 +121,6 @@ if $0 == __FILE__
   config = OpenStruct.new(YAML.load(File.read(options.config_file)))
   puts config.inspect if options.show_config
 
-  # built-in agents
-  fallback = Clog::Fallback.new
-
   # load agents
   Dir.glob("#{config.agent_dir}/*.rb") { |f|
     load f
