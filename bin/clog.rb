@@ -24,38 +24,50 @@ config = OpenStruct.new(YAML.load(File.read(options[:config_file])).merge(option
 puts config.inspect if config.show_config
 
 # built-in filters
-class FallbackFilter
-  attr_reader :name
-  def initialize
-    @lines = []
-    @name = "Fallback"
+module Clog
+  class Filter
+    attr_accessor :name, :glob
   end
-  def filter(line)
-    @lines ||= []
-    @lines.push line
-    true
-  end
-  def to_s
-    @lines
+
+  class FallbackFilter < Filter
+    def initialize
+      @lines = []
+      @name = "Fallback"
+    end
+    def filter(line)
+      @lines ||= []
+      @lines.push line
+      true
+    end
+    def to_s
+      @lines
+    end
   end
 end
-fallback = FallbackFilter.new
+fallback = Clog::FallbackFilter.new
 
 # load filters
 Dir.glob("#{config.filter_dir}/*.rb") { |f|
   load f
 }
 filters = []
+files = []
 config.filters.each do |f|
-  filters.push eval("#{f}.new")
+  a = eval("Clog::#{f['class']}.new")
+  a.name = f['name'] || f['class']
+  a.glob = f['glob'] || ''
+  files.concat Dir.glob("#{a.glob}")
+  filters.push a
 end
 
 # do it, rockapella
-config.files.each do |file|
+files.each do |file|
   File.read(file).each_line do |line|
     handled = false
     filters.each do |f|
-      handled |= f.filter(line)
+      if File.fnmatch("#{f.glob}",file)
+	handled |= f.filter(line)
+      end
     end
     fallback.filter(line) unless handled or not config.fallback
   end
@@ -63,6 +75,6 @@ end
 (filters.concat [fallback]).each do |f|
   name = "(nameless)"
   name = f.name if f.respond_to? "name"
-  puts "---- #{name} ----"
+  puts "\n---- #{name} ----"
   puts f.to_s
 end

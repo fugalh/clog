@@ -1,16 +1,18 @@
-# simple example filter that just does the equivalent of 'wc -l'
-
-class CountFilter
-  attr_reader :name
-  def initialize
-    @count = 0
-    @name = 'Count'
-  end
-  def filter(line)
-    @count += 1
-    false # because we return false, the fallback will still be in effect
-  end
-  def to_s
-    @count.to_s
+module Clog
+  # simple example filter that just does the equivalent of 'wc -l'
+  class CountFilter < Filter
+    def initialize
+      @count = 0
+      @name = 'Count'
+    end
+    # return value: true if we "handled" this line, else false
+    def filter(line)
+      @count += 1
+    end
+    # this is the output of the filter, called when all lines have been fed to
+    # filter()
+    def to_s
+      "line count: @count.to_s"
+    end
   end
 end
