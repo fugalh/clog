@@ -25,4 +25,4 @@ clean:
 show: .config
 	ruby setup.rb show
 
-.PHONY: test install doc config agents clean show
+.PHONY: test install doc config clean show setup
