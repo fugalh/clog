@@ -1,15 +1,11 @@
 rdoc=rdoc1.8
-test: agents
+test:
 	echo "# this file is generated" > test/clog.conf
 	sed "s:/usr/local/share/clog/agents:share:" examples/clog.conf >> test/clog.conf
 	ruby -Ilib bin/clog -C -c test/clog.conf
 
-agents:
-	> lib/clog/agents.rb
-	for i in lib/clog/agents/*.rb; do echo "require 'clog/agents/`basename $$i .rb`'" >> lib/clog/agents.rb; done
-
-doc: agents
-	${rdoc} -t "clog documentation" lib bin
+doc:
+	${rdoc} -m lib/clog.rb -t "clog documentation" bin lib
 
 .config:
 	ruby setup.rb config --prefix=/usr/local --siteruby=/usr/local/lib/site_ruby
@@ -26,4 +22,4 @@ clean:
 show: .config
 	ruby setup.rb show
 
-.PHONY: test install doc config agents clean show
+.PHONY: test install doc config clean show
