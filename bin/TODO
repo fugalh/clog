@@ -1,0 +1,8 @@
+filters:
+ - cron
+ - anacron
+ - dhclient
+ - kernel
+ - waproamd
+ - openvpn
+ - postfix
