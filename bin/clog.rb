@@ -31,7 +31,7 @@ module Clog
       true
     end
     def syslog_parse(line)
-      return false unless line =~ /(\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\d+)\])?: (.*)/
+      return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\d+)\])?: (.*)/
       time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
     end
   end
