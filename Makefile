@@ -12,7 +12,10 @@ doc:
 
 config: .config
 
-install: config
+setup: config
+	ruby setup.rb setup
+
+install: setup
 	ruby setup.rb install
 
 clean:
@@ -22,4 +25,4 @@ clean:
 show: .config
 	ruby setup.rb show
 
-.PHONY: test install doc config clean show
+.PHONY: test install doc config agents clean show
