@@ -20,7 +20,8 @@ module Clog
 
     # This method is called after all lines have been fed to handle(). 
     #
-    # Returns a string suitable for email (e.g. wrapped at 72 characters, etc.)
+    # Returns a string suitable for the body of an email (e.g. wrapped at 72
+    # characters wherever possible, etc.)
     def report
       ""
     end
