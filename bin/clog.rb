@@ -1,14 +1,17 @@
 #!/usr/bin/ruby
+# :include:README
+
 class Hash
+  # Make a hash out of an array of keys and an array of values. Obviously, they
+  # should be arrays of the same arity.
   def Hash.fold(keys,values)
     Hash[*keys.zip(values).flatten]
   end
 end
 
-# :include:README
 module Clog
   # This abstract class is the basis for all agents.
-  # Included agents:
+  # Agents included with clog:
   #
   # :include:agents
   class Agent
@@ -18,7 +21,7 @@ module Clog
     # the line. If another agent already consumed this line, then this
     # will never be called.
     #
-    # Returns one of {:unhandled,:handled,:consumed}
+    # Returns one of {:unhandled, :handled, :consumed}
     def handle(line, handled)
       return :unhandled
     end
@@ -35,7 +38,7 @@ module Clog
 
   # This is a convenience method for handling syslog entries. 
   # 
-  # Returns a hash with keys [:time,:hostname,:tag,:pid,:msg], or false on
+  # Returns a hash with keys {:time, :hostname, :tag, :pid, :msg}, or false on
   # failure.
   def syslog_parse(line)
     return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\
