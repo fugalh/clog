@@ -78,8 +78,12 @@ d+)\])?: (.*)/
       end
     end
     def report
-      "----- #{@glob} -----\n\n" + (
-	@agents.collect {|a| "-= #{a.class} =-\n#{a.report}"}.join "\n\n")
+      <<EOF
+----- #{@glob} -----
+
+#{@agents.collect {|a| "-= #{a.class} =-\n#{a.report}"}.join "\n\n"}
+
+EOF
     end
   end
 end
