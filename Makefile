@@ -12,7 +12,7 @@ doc: agents
 	${rdoc} lib bin
 
 .config:
-	ruby setup.rb config --prefix=/usr/local --siteruby=/usr/local/lib
+	ruby setup.rb config --prefix=/usr/local --siteruby=/usr/local/lib/site_ruby
 
 config: .config
 
