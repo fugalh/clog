@@ -1,9 +1,8 @@
 module Clog
-  class Postfix < Filter
-    def match(line)
-      line =~ / postfix\//
-    end
-    def filter(line)
+  class Postfix < Agent
+    def handle(line,handled)
+      return false,false unless line =~ / postfix\//
+      return true,true
     end
     def report
       ""

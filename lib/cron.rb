@@ -1,18 +1,17 @@
 module Clog
-  class Cron < Filter
+  class Cron < Agent
     def initialize
       @commands = {}
     end
-    def match(line)
-      line =~ /CRON/
-    end
-    def filter(line)
+    def handle(line,handled)
+      return false,false unless line =~ /CRON/
       p = syslog_parse(line)
       if p.last =~ /\((\S+)\) CMD \((.*)\)/
 	user = $1
 	@commands[user] ||= []
 	@commands[user].push $2.strip
       end
+      return true,true
     end
     def report
       s = ""
