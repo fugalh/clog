@@ -22,11 +22,14 @@ report, to not leave out anything important, and to not consume anything that
 is not understood so that anomalous readings can be reported by the Fallback
 agent.
 
-= Requirements
+Requirements:
 - ruby
 
-= Installation
+Installation:
   make test | less -S
   make install
+
+The install make target does not set up a cron job. See examples/crontab for a
+sample crontab.
 
 clog is Copyright (C) 2005  Hans Fugal <hans@fugal.net>
