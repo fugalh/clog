@@ -87,7 +87,7 @@ d+)\])?: (.*)/
 	  handled = :unhandled
 	  @agents.each do |a|
 	    break if handled == :consumed
-	    handled = a.handle(l,handled)
+	    handled = a.handle(l,handled) rescue nil
 	  end
 	end
 	io.close
