@@ -10,6 +10,23 @@ module Clog
       return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\d+)\])?: (.*)/
       time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
     end
+    def filter(line)
+    end
+    def report
+      ""
+    end
+  end
+  class Fallback < Filter
+    def initialize
+      @name = "Fallback"
+      @lines = []
+    end
+    def filter(line)
+      @lines.push line
+    end
+    def report
+      @lines.to_s
+    end
   end
 end
 
@@ -54,6 +71,7 @@ if $0 == __FILE__
   puts config.inspect if config.show_config
 
   # built-in filters
+  fallback = Clog::Fallback.new
 
   # load filters
   Dir.glob("#{config.filter_dir}/*.rb") { |f|
@@ -86,27 +104,29 @@ if $0 == __FILE__
     io.each_line do |line|
       t = Time.parse(line[0,15],config.to)
       next if t < config.from or t > config.to
-      t_filters.each do |f|
-	f.filter(line) if f.match(line)
+      matching_filters = t_filters.find_all {|f| f.match(line)}
+      matching_filters.each do |f|
+	f.filter(line)
       end
+      fallback.filter(line) if config.fallback and matching_filters.empty?
     end
     io.close
   end
 
   # output
   puts <<EOF
-*************************** clog ***************************
-Started at  #{starttime}
-Time range: #{config.from} to #{config.to}
-************************************************************
 
+********************************* clog *********************************
+From: #{config.from.rfc2822} 
+  To: #{config.to.rfc2822}
+
+Processing time: #{Time.now - starttime} seconds
+************************************************************************
 EOF
-  filters.each do |f|
+  (filters + [fallback]).each do |f|
     name = "(nameless)"
     name = f.name if f.respond_to? "name"
     puts "\n---- #{name} ----"
     puts f.report
   end
-
-  # TODO fallback
 end
