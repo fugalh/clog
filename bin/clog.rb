@@ -3,6 +3,9 @@
 # :include:README
 module Clog
   # This abstract class is the basis for all agents.
+  # Included agents:
+  #
+  # :include:agents
   class Agent
     # This method is called for every line in the log file(s).
     # If this line has already been handled by another agent, handled will be
