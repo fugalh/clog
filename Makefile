@@ -9,7 +9,7 @@ agents:
 	for i in lib/clog/agents/*.rb; do echo "require 'clog/agents/`basename $$i .rb`'" >> lib/clog/agents.rb; done
 
 doc: agents
-	${rdoc} lib bin
+	${rdoc} -t "clog documentation" lib bin
 
 .config:
 	ruby setup.rb config --prefix=/usr/local --siteruby=/usr/local/lib/site_ruby

@@ -29,8 +29,8 @@ agent.
   make config show
   make install
 
-The install make target does not set up a cron job. See examples/crontab for a
-sample crontab.
+"make install" does not set up a cron job. See examples/crontab for a sample
+crontab.
 
 If you don't like the output of "make show", run "ruby setup.rb config" with
 the parameters you want.
