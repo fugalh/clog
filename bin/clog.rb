@@ -42,8 +42,11 @@ d+)\])?: (.*)/
 
   # Directs the feeding and reporting of agents for a given file glob.
   class Director
-    def initialize(glob, agents, from, to)
+    def initialize(glob, agents, ignore, from, to)
       @glob, @agents, @from, @to = glob, agents, from, to
+      ignore ||= []
+      r = ignore.collect{|i| Regexp.new(i)}
+      @ignore = Regexp.union(*r)
     end
     def run
       files = Dir.glob(@glob)
@@ -61,6 +64,9 @@ d+)\])?: (.*)/
 	  io = File.open(f)
 	end
 	io.each_line do |l|
+	  # skip if ignored
+	  next if @ignore and @ignore.match(l) 
+
 	  # skip if out of date range
 	  t = Time.parse(l[0,15],@to)
 	  next if t < @from or t > @to
@@ -139,7 +145,8 @@ if $0 == __FILE__
     f['agents'].each do |a|
       agents.push eval("Clog::#{a}.new")
     end
-    directors.push Director.new(glob,agents,options.from,options.to)
+    ignore = f['ignore']
+    directors.push Director.new(glob,agents,ignore,options.from,options.to)
   end
 
   # run
