@@ -151,6 +151,10 @@ if $0 == __FILE__
     load f
   }
   directors = []
+  if config.files.nil?
+    $stderr.puts "Nothing to do."
+    exit(1)
+  end
   config.files.each do |f|
     glob = f['glob']
     agents = []

@@ -1,12 +1,12 @@
 module Clog
   class Postfix < Agent
     def initialize
-      @rejected = 0
-      @connections = 0
-      @lost_connections = 0
-      @accepted = 0
-      @locals = 0
-      @sent = @deferred = @bounced = 0
+      @smtp = Hash.new(0)
+      @smtpd = Hash.new(0)
+      @virtual = Hash.new(0)
+      @local = Hash.new(0)
+      @pickup = Hash.new(0)
+      @qmgr = Hash.new(0)
       @unrecognized = []
     end
     def handle(line,handled)
@@ -18,31 +18,43 @@ module Clog
       when %r{postfix/smtpd}
 	case h[:msg]
 	when /^NOQUEUE: reject/
-	  @rejected += 1
+	  @smtpd[:rejected] += 1
 	  :consumed
 	when /^connect /
-	  @connections += 1
+	  @smtpd[:connections] += 1
 	  :consumed
 	when /^lost connection/
-	  @lost_connections += 1
+	  @smtpd[:lost_connections] += 1
 	  :consumed
 	when /^[0-9A-F]{10,10}:/
-	  @accepted += 1
+	  @smtpd[:accepted] += 1
 	  :consumed
 	when /^disconnect /,/verification failed/,/^too many errors/,
 	  /address not listed/,/^timeout/,/sent non-SMTP command/
 	  :consumed
 	end
+      when %r{postfix/pickup}
+	case h[:msg]
+	when /^[0-9A-F]{10,10}:/
+	  @pickup[:messages] += 1
+	  :consumed
+	end
+      when %r{postfix/virtual}
+	case h[:msg]
+	when /^[0-9A-F]{10,10}:.*status=sent/
+	  @virtual[:sent] += 1
+	  :consumed
+	end
       when %r{postfix/smtp}
 	case h[:msg]
 	when /^[0-9A-F]{10,10}:.*status=sent/
-	  @sent += 1
+	  @smtp[:sent] += 1
 	  :consumed
 	when /^[0-9A-F]{10,10}:.*status=deferred/
-	  @deferred += 1
+	  @smtp[:deferred] += 1
 	  :consumed
 	when /^[0-9A-F]{10,10}:.*status=bounced/
-	  @bounced += 1
+	  @smtp[:bounced] += 1
 	  :consumed
 	when /^connect to/,/numeric domain name/
 	  :consumed
@@ -50,7 +62,7 @@ module Clog
       when %r{postfix/local}
 	case h[:msg]
 	when /^[0-9A-F]{10,10}:/
-	  @locals += 1
+	  @local[:locals] += 1
 	  :consumed
 	end
       when %r{postfix/cleanup}
@@ -63,18 +75,21 @@ module Clog
     def report
       <<EOF
 smtpd:
-  #{@connections} connections.
-  #{@rejected} connections rejected.
-  #{@lost_connections} connections lost.
-  #{@accepted} messages accepted.
-
-local:
-  #{@locals} local messages.
+  #{@smtpd[:connections]} connections.
+  #{@smtpd[:rejected]} connections rejected.
+  #{@smtpd[:lost_connections]} connections lost.
+  #{@smtpd[:accepted]} messages accepted.
 
 smtp:
-  #{@sent} sent.
-  #{@deferred} deferred.
-  #{@bounced} bounced.
+  #{@smtp[:sent]} sent.
+  #{@smtp[:deferred]} deferred.
+  #{@smtp[:bounced]} bounced.
+
+local:
+  #{@local[:locals]} messages.
+
+pickup:
+  #{@pickup[:messages]} messages.
 
 Unrecognized:
   #{@unrecognized.join "\n  "}
