@@ -55,7 +55,10 @@ d+)\])?: (.*)/
     def initialize(glob, agents, ignore, from, to)
       @glob, @agents, @from, @to = glob, agents, from, to
       ignore ||= []
-      r = ignore.collect{|i| Regexp.new(i)}
+      r = ignore.collect{|i| 
+	i = i[1..-2] if i =~ %r{^/.*/$}
+	Regexp.new(i)
+      }
       @ignore = Regexp.union(*r)
     end
     def run
