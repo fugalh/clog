@@ -22,8 +22,8 @@ is not understood so that anomalous readings can be reported by the Fallback
 agent.
 
 Requirements:
-  - ruby
-  - file
+- ruby
+- file(1)
 
 Installation:
   make test | less -S

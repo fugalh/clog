@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 
+# :include:README
 module Clog
   # This abstract class is the basis for all agents.
   class Agent
@@ -21,14 +22,19 @@ module Clog
       ""
     end
 
-    # This is a convenience method for handling syslog entries. 
-    # 
-    # Returns time,hostname,tag,pid,msg
-    def syslog_parse(line)
-      return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\
+  end
+
+  # This is a convenience method for handling syslog entries. 
+  # 
+  # Returns time,hostname,tag,pid,msg
+  def syslog_parse(line)
+    return false unless line =~ /(\S+\s+\S+\s+\d\d:\d\d:\d\d) (\S+) (\S+)(\[(\
 d+)\])?: (.*)/
-      time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
-    end
+    time,hostname,tag,pid,msg = $1,$2,$3,$5,$6
+  end
+
+  def parsedate(date)
+    Time.parse(`date -d "#{date}"`)
   end
 
   # Directs the feeding and reporting of agents for a given file glob.
@@ -88,9 +94,7 @@ if $0 == __FILE__
   require 'zlib'
   require 'time'
 
-  def parsedate(date)
-    Time.parse(`date -d "#{date}"`)
-  end
+  include Clog
   # command-line options
   options = OpenStruct.new({
     :config_file => "/etc/clog/clog.conf",
@@ -132,7 +136,7 @@ if $0 == __FILE__
     f['agents'].each do |a|
       agents.push eval("Clog::#{a}.new")
     end
-    directors.push Clog::Director.new(glob,agents,options.from,options.to)
+    directors.push Director.new(glob,agents,options.from,options.to)
   end
 
   # run
