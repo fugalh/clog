@@ -1,29 +1,5 @@
 #!/usr/bin/ruby
 
-require 'optparse'
-require 'yaml'
-require 'ostruct'
-require 'zlib'
-# command-line options
-options = {
-  :config_file => "/etc/clog/clog.conf",
-}
-opts = OptionParser.new do |opts|
-  opts.banner = "usage: #{$0} [options]"
-  
-  opts.on('-c','--config PATH','specify configuration file') {
-    |options[:config_file]|}
-  opts.on('-C','--show-config','show real configuration') {
-    |options[:show_config]|}
-  opts.on('-h','--help','this message') { puts opts; exit }
-end
-opts.parse!(ARGV)
-
-# configuration file
-config = OpenStruct.new(YAML.load(File.read(options[:config_file])).merge(options))
-puts config.inspect if config.show_config
-
-# built-in filters
 module Clog
   class Filter
     attr_accessor :name, :glob
@@ -37,40 +13,70 @@ module Clog
   end
 end
 
-# load filters
-Dir.glob("#{config.filter_dir}/*.rb") { |f|
-  load f
-}
-filters = []
-config.filters.each do |f|
-  a = eval("Clog::#{f['class']}.new")
-  a.name = f['name'] || f['class']
-  a.glob = f['glob'] || ''
-  filters.push a
-end
+if $0 == __FILE__
+  require 'optparse'
+  require 'yaml'
+  require 'ostruct'
+  require 'zlib'
 
-# do it, rockapella
-filters.each do |f|
-  io = nil
-  Dir.glob(f.glob).each do |file| 
-    unless File.readable?(file)
-      $stderr.puts "warning: #{file} is not readable."
-      next
-    end
-    if system("file \"#{file}\"|grep -q \"gzip compressed data\"")
-      io = Zlib::GzipReader.open(file,'r')
-    else
-      io = File.open(file,'r')
-    end
-    io.each_line do |line|
-      f.filter(line) if f.match(line)
-    end
-    io.close
+  # command-line options
+  options = {
+    :config_file => "/etc/clog/clog.conf",
+  }
+  opts = OptionParser.new do |opts|
+    opts.banner = "usage: #{$0} [options]"
+    
+    opts.on('-c','--config PATH','specify configuration file') {
+      |options[:config_file]|}
+    opts.on('-C','--show-config','show real configuration') {
+      |options[:show_config]|}
+    opts.on('-h','--help','this message') { puts opts; exit }
   end
-end
-filters.each do |f|
-  name = "(nameless)"
-  name = f.name if f.respond_to? "name"
-  puts "\n---- #{name} ----"
-  puts f.report
+  opts.parse!(ARGV)
+
+  # configuration file
+  config = OpenStruct.new(YAML.load(File.read(options[:config_file])).merge(options))
+  puts config.inspect if config.show_config
+
+  # built-in filters
+
+  # load filters
+  Dir.glob("#{config.filter_dir}/*.rb") { |f|
+    load f
+  }
+  filters = []
+  config.filters.each do |f|
+    a = eval("Clog::#{f['class']}.new")
+    a.name = f['name'] || f['class']
+    a.glob = f['glob'] || ''
+    filters.push a
+  end
+
+  # do it, rockapella
+  filters.each do |f|
+    io = nil
+    Dir.glob(f.glob).sort.reverse.each do |file| 
+      unless File.readable?(file)
+	$stderr.puts "warning: #{file} is not readable."
+	next
+      end
+      if system("file \"#{file}\"|grep -q \"gzip compressed data\"")
+	io = Zlib::GzipReader.open(file)
+      else
+	io = File.open(file)
+      end
+      io.each_line do |line|
+	f.filter(line) if f.match(line)
+      end
+      io.close
+    end
+  end
+  filters.each do |f|
+    name = "(nameless)"
+    name = f.name if f.respond_to? "name"
+    puts "\n---- #{name} ----"
+    puts f.report
+  end
+
+  # TODO fallback
 end

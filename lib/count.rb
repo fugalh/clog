@@ -5,11 +5,14 @@ module Clog
       @count = 0
       @name = 'Count'
     end
-    # return value: true if we "handled" this line, else false
+    def match(line)
+      line =~ /./
+    end
+    # will only be called on lines that pass match()
     def filter(line)
       @count += 1
     end
-    # this is the output of the filter, called when all lines have been fed to
+    # this is the output of the filter, called after all lines have been fed to
     # filter()
     def report
       "line count: #{@count.to_s}"
