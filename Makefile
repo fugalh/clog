@@ -5,7 +5,7 @@ test:
 	ruby bin/clog.rb -C -c test/clog.conf
 
 doc:
-	egrep "class .* < Agent" -r share/ | cut -d ' ' -f 4 | sed "s/^/- /" > agents
+	egrep "class .* < Agent" -r share/*.rb | cut -d ' ' -f 4 | sed "s/^/- /" > agents
 	${rdoc} -x _darcs -x share
 
 install: 
